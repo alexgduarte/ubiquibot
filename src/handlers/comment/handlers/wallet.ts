@@ -4,9 +4,9 @@ import { Context } from "../../../types/context";
 import { GitHubPayload } from "../../../types/payload";
 
 // Extracts ensname from raw text.
-function extractEnsName(text: string) {
+export function extractEnsName(text: string) {
   // Define a regular expression to match ENS names
-  const ensRegex = /^(?=.{3,40}$)([a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}$/gm;
+  const ensRegex = /^(?=.{3,40}$)([a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}$/gim;
 
   // Find the first match of the regular expression in the input text
   const match = text.match(ensRegex);
@@ -80,10 +80,13 @@ function registerWalletWithVerification(context: Context, body: string, address:
   }
 }
 
-export async function resolveAddress(ensName: string): Promise<string | null> {
+type EnsResolver = Pick<ethers.providers.Provider, "resolveName">;
+
+export async function resolveAddress(
+  ensName: string,
+  provider: EnsResolver = ethers.getDefaultProvider("homestead")
+): Promise<string | null> {
   // Gets the Ethereum address associated with an ENS (Ethereum Name Service) name
-  // Explicitly set provider to Ethereum mainnet
-  const provider = new ethers.providers.JsonRpcProvider(`https://rpc-bot.ubq.fi/v1/mainnet`); // mainnet required for ENS
   const address = await provider.resolveName(ensName).catch((err) => {
     console.trace({ err });
     return null;
